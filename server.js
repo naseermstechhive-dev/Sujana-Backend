@@ -5,6 +5,8 @@ import connectDB from './config/db.js';
 import authRoutes from './routes/authroutes.js';
 import cashRoutes from './routes/cashRoutes.js';
 import billingRoutes from './routes/billingRoutes.js';
+import renewalRoutes from './routes/renewalRoutes.js';
+import takeoverRoutes from './routes/takeoverRoutes.js';
 import User from './Models/user.js';
 
 dotenv.config();
@@ -51,6 +53,8 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/cash', cashRoutes);
 app.use('/api/billing', billingRoutes);
+app.use('/api/renewal', renewalRoutes);
+app.use('/api/takeover', takeoverRoutes);
 
 // Global Error Handler
 app.use((err, req, res, next) => {

@@ -8,8 +8,8 @@ const cashVaultSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ['cash', 'remaining'],
-      default: 'cash',
+      enum: ['initial', 'billing', 'remaining'],
+      default: 'initial',
     },
     addedBy: {
       type: mongoose.Schema.Types.ObjectId,
