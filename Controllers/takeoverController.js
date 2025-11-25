@@ -1,9 +1,52 @@
 import Takeover from '../Models/takeover.js';
 import CashVault from '../Models/cashVault.js';
+import Billing from '../Models/billing.js';
+import Renewal from '../Models/renewal.js';
+
+// Helper function to generate unique takeover number
+const generateUniqueTakeoverNumber = async () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+
+  // Base format: TAKEOVER-YYYYMMDD-XXXX
+  const basePrefix = `TAKEOVER-${year}${month}${day}-`;
+
+  let counter = 1;
+  let takeoverNo;
+
+  do {
+    // Pad counter to 4 digits
+    const counterStr = String(counter).padStart(4, '0');
+    takeoverNo = `${basePrefix}${counterStr}`;
+
+    // Check if this takeover number already exists
+    const existingTakeover = await Takeover.findOne({ takeoverNo });
+    const existingBilling = await Billing.findOne({ invoiceNo: takeoverNo });
+    const existingRenewal = await Renewal.findOne({ renewalNo: takeoverNo });
+
+    if (!existingTakeover && !existingBilling && !existingRenewal) {
+      // Takeover number is unique
+      break;
+    }
+
+    counter++;
+  } while (counter < 10000); // Prevent infinite loop
+
+  if (counter >= 10000) {
+    throw new Error('Unable to generate unique takeover number');
+  }
+
+  return takeoverNo;
+};
 
 export const createTakeover = async (req, res, next) => {
   try {
-    const { customer, pledgeDetails, goldDetails, takeoverDetails, takeoverNo } = req.body;
+    const { customer, pledgeDetails, goldDetails, takeoverDetails } = req.body;
+
+    // Generate a unique takeover number
+    const takeoverNo = await generateUniqueTakeoverNumber();
 
     // Calculate profit/loss
     const profitLoss = takeoverDetails.takeoverAmount - takeoverDetails.estimatedValue;

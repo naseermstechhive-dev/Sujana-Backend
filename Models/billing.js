@@ -32,6 +32,10 @@ const billingSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
+    customerPhoto: {
+      type: String, // Base64 encoded image data
+      default: null,
+    },
   },
   { timestamps: true },
 );

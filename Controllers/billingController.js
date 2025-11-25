@@ -3,9 +3,50 @@ import CashVault from '../Models/cashVault.js';
 import Renewal from '../Models/renewal.js';
 import Takeover from '../Models/takeover.js';
 
+// Helper function to generate unique invoice number
+const generateUniqueInvoiceNumber = async () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+
+  // Base format: SUJANA-YYYYMMDD-XXXX
+  const basePrefix = `SUJANA-${year}${month}${day}-`;
+
+  let counter = 1;
+  let invoiceNo;
+
+  do {
+    // Pad counter to 4 digits
+    const counterStr = String(counter).padStart(4, '0');
+    invoiceNo = `${basePrefix}${counterStr}`;
+
+    // Check if this invoice number already exists
+    const existingBilling = await Billing.findOne({ invoiceNo });
+    const existingRenewal = await Renewal.findOne({ renewalNo: invoiceNo });
+    const existingTakeover = await Takeover.findOne({ takeoverNo: invoiceNo });
+
+    if (!existingBilling && !existingRenewal && !existingTakeover) {
+      // Invoice number is unique
+      break;
+    }
+
+    counter++;
+  } while (counter < 10000); // Prevent infinite loop
+
+  if (counter >= 10000) {
+    throw new Error('Unable to generate unique invoice number');
+  }
+
+  return invoiceNo;
+};
+
 export const createBilling = async (req, res, next) => {
   try {
-    const { customer, goldDetails, calculation, invoiceNo } = req.body;
+    const { customer, goldDetails, calculation } = req.body;
+
+    // Generate a unique invoice number
+    const invoiceNo = await generateUniqueInvoiceNumber();
 
     const billing = await Billing.create({
       customer,
@@ -127,6 +168,40 @@ export const deleteBilling = async (req, res, next) => {
   }
 };
 
+export const uploadBillingImage = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { imageData } = req.body;
+
+    if (!imageData) {
+      return res.status(400).json({
+        success: false,
+        message: 'Image data is required',
+      });
+    }
+
+    const billing = await Billing.findById(id);
+    if (!billing) {
+      return res.status(404).json({
+        success: false,
+        message: 'Billing not found',
+      });
+    }
+
+    // Update billing with image data
+    billing.customerPhoto = imageData;
+    await billing.save();
+
+    res.json({
+      success: true,
+      message: 'Image uploaded successfully',
+      data: billing,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const resetGoldTransactions = async (req, res, next) => {
   try {
     // Only admin can reset gold transactions
@@ -146,6 +221,21 @@ export const resetGoldTransactions = async (req, res, next) => {
     res.json({
       success: true,
       message: 'All gold transactions reset successfully',
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getNextInvoice = async (req, res, next) => {
+  try {
+    // Generate a preview of the next invoice number
+    const invoiceNo = await generateUniqueInvoiceNumber();
+
+    res.json({
+      success: true,
+      message: 'Next invoice number generated successfully',
+      invoiceNo,
     });
   } catch (err) {
     next(err);
