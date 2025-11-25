@@ -15,9 +15,12 @@ const app = express();
 // Middlewares
 app.use(
   cors({
-    origin: process.env.NODE_ENV === 'production'
-      ? ['https://sujana-gold.vercel.app/'] // Replace with actual deployed frontend URL
-      : ['http://localhost:5173', 'http://localhost:5174'],
+    origin: [
+      'http://localhost:5173',
+      'http://localhost:5174',
+      'https://sujana-gold.vercel.app',
+      'https://sujana-backend-ruh8.onrender.com'
+    ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
