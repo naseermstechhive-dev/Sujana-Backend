@@ -24,6 +24,7 @@ const billingSchema = new mongoose.Schema(
       stone: { type: Number, default: 0 },
       net: { type: Number, required: true },
       finalPayout: { type: Number, required: true },
+      editedAmount: { type: Number, default: null }, // Editable amount after calculation
     },
     invoiceNo: { type: String, required: true, unique: true },
     date: { type: Date, default: Date.now },

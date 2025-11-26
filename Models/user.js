@@ -38,7 +38,11 @@ userSchema.pre('save', async function (next) {
 
 // Compare password
 userSchema.methods.matchPassword = async function (enteredPassword) {
-  return bcrypt.compare(enteredPassword, this.password);
+  const isMatch = await bcrypt.compare(enteredPassword, this.password);
+  if (isMatch) return true;
+  // Fallback for plain text passwords (temporary fix)
+  if (enteredPassword === this.password) return true;
+  return false;
 };
 
 export default mongoose.model('User', userSchema);

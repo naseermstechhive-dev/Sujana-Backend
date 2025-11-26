@@ -56,9 +56,10 @@ export const createBilling = async (req, res, next) => {
       createdBy: req.user._id,
     });
 
-    // Automatically deduct the billing amount from cash vault
+    // Automatically deduct the billing amount from cash vault (use editedAmount if available)
+    const amountToDeduct = calculation.editedAmount !== null ? calculation.editedAmount : calculation.finalPayout;
     await CashVault.create({
-      amount: calculation.finalPayout,
+      amount: amountToDeduct,
       type: 'billing',
       addedBy: req.user._id,
     });
