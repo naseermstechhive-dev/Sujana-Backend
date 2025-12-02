@@ -147,3 +147,26 @@ export const checkInitialCashExists = async (req, res, next) => {
     next(err);
   }
 };
+
+export const resetAllCash = async (req, res, next) => {
+  try {
+    // Only admin can reset initial cash
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Admin only.',
+      });
+    }
+
+    // Only reset initial cash - billing deductions are kept in database for Analytics
+    // Frontend will filter to show only today's transactions
+    await CashVault.deleteMany({ type: 'initial' });
+
+    res.json({
+      success: true,
+      message: 'Initial cash reset successfully. Historical data preserved for Analytics.',
+    });
+  } catch (err) {
+    next(err);
+  }
+};

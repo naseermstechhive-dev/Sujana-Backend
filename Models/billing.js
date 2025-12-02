@@ -16,7 +16,13 @@ const billingSchema = new mongoose.Schema(
       purityIndex: { type: Number, required: true },
       purityLabel: { type: String, required: true },
       ornamentType: { type: String, required: true },
-      ornamentCode: { type: String, required: true },
+      ornamentCode: { type: String, required: false }, // Deprecated - kept for backward compatibility with deployed backend
+      kdmType: { 
+        type: String, 
+        required: false, // Made optional temporarily for backward compatibility
+        enum: ['KDM', 'Non KDM'],
+        default: 'KDM'
+      },
     },
     calculation: {
       selectedRatePerGram: { type: Number, required: true },
@@ -27,6 +33,14 @@ const billingSchema = new mongoose.Schema(
       editedAmount: { type: Number, default: null }, // Editable amount after calculation
     },
     invoiceNo: { type: String, required: true, unique: true },
+    billingType: {
+      type: String,
+      enum: ['Physical', 'Release', 'TakeOver'],
+      default: 'Physical'
+    },
+    bankName: { type: String },
+    commissionPercentage: { type: Number },
+    commissionAmount: { type: Number },
     date: { type: Date, default: Date.now },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,

@@ -43,16 +43,31 @@ const generateUniqueInvoiceNumber = async () => {
 
 export const createBilling = async (req, res, next) => {
   try {
-    const { customer, goldDetails, calculation } = req.body;
+    const { customer, goldDetails, calculation, billingType, bankName, commissionPercentage, commissionAmount } = req.body;
+
+    // Handle backward compatibility: ensure both kdmType and ornamentCode are set
+    // The deployed backend may still require ornamentCode, so we provide both
+    const processedGoldDetails = {
+      ...goldDetails,
+      // Set kdmType (new field)
+      kdmType: goldDetails.kdmType || 'KDM',
+      // Set ornamentCode for backward compatibility with deployed backend that requires it
+      // Use kdmType value as ornamentCode if ornamentCode is not provided
+      ornamentCode: goldDetails.ornamentCode || goldDetails.kdmType || 'KDM'
+    };
 
     // Generate a unique invoice number
     const invoiceNo = await generateUniqueInvoiceNumber();
 
     const billing = await Billing.create({
       customer,
-      goldDetails,
+      goldDetails: processedGoldDetails,
       calculation,
       invoiceNo,
+      billingType: billingType || 'Physical',
+      bankName: billingType !== 'Physical' ? bankName : undefined,
+      commissionPercentage: billingType === 'Release' ? commissionPercentage : undefined,
+      commissionAmount: billingType === 'Release' ? commissionAmount : undefined,
       createdBy: req.user._id,
     });
 
