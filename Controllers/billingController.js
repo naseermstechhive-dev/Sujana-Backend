@@ -53,7 +53,16 @@ export const createBilling = async (req, res, next) => {
       kdmType: goldDetails.kdmType || 'KDM',
       // Set ornamentCode for backward compatibility with deployed backend that requires it
       // Use kdmType value as ornamentCode if ornamentCode is not provided
-      ornamentCode: goldDetails.ornamentCode || goldDetails.kdmType || 'KDM'
+      ornamentCode: goldDetails.ornamentCode || goldDetails.kdmType || 'KDM',
+      // Preserve items array if it exists (for multiple items support)
+      items: goldDetails.items || []
+    };
+
+    // Process calculation to preserve items array
+    const processedCalculation = {
+      ...calculation,
+      // Preserve items array if it exists (for multiple items support)
+      items: calculation.items || []
     };
 
     // Generate a unique invoice number
@@ -62,7 +71,7 @@ export const createBilling = async (req, res, next) => {
     const billing = await Billing.create({
       customer,
       goldDetails: processedGoldDetails,
-      calculation,
+      calculation: processedCalculation,
       invoiceNo,
       billingType: billingType || 'Physical',
       bankName: billingType !== 'Physical' ? bankName : undefined,

@@ -23,6 +23,22 @@ const billingSchema = new mongoose.Schema(
         enum: ['KDM', 'Non KDM'],
         default: 'KDM'
       },
+      // Multiple items support
+      items: [{
+        weight: { type: Number },
+        stoneWeight: { type: Number, default: 0 },
+        purityIndex: { type: Number },
+        purityLabel: { type: String },
+        ornamentType: { type: String },
+        kdmType: { type: String, enum: ['KDM', 'Non KDM'] },
+        selectedRatePerGram: { type: Number },
+        grams: { type: Number },
+        stone: { type: Number, default: 0 },
+        net: { type: Number },
+        finalPayout: { type: Number },
+        editedAmount: { type: Number },
+        calculatedAmount: { type: Number },
+      }],
     },
     calculation: {
       selectedRatePerGram: { type: Number, required: true },
@@ -31,6 +47,26 @@ const billingSchema = new mongoose.Schema(
       net: { type: Number, required: true },
       finalPayout: { type: Number, required: true },
       editedAmount: { type: Number, default: null }, // Editable amount after calculation
+      // Multiple items support
+      items: [{
+        weight: { type: Number },
+        stoneWeight: { type: Number, default: 0 },
+        purityIndex: { type: Number },
+        purityLabel: { type: String },
+        ornamentType: { type: String },
+        kdmType: { type: String, enum: ['KDM', 'Non KDM'] },
+        selectedRatePerGram: { type: Number },
+        grams: { type: Number },
+        stone: { type: Number, default: 0 },
+        net: { type: Number },
+        finalPayout: { type: Number },
+        editedAmount: { type: Number },
+        calculatedAmount: { type: Number },
+      }],
+      // Totals for multiple items
+      totalGrams: { type: Number },
+      totalStone: { type: Number },
+      totalNet: { type: Number },
     },
     invoiceNo: { type: String, required: true, unique: true },
     billingType: {
