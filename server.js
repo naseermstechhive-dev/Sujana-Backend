@@ -2,6 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import { connectDB } from './config/db.js';
+import mongoose from './config/db.js';
 import authRoutes from './routes/authroutes.js';
 import cashRoutes from './routes/cashRoutes.js';
 import billingRoutes from './routes/billingRoutes.js';
@@ -15,19 +16,7 @@ const app = express();
 const PORT = process.env.PORT || 5001;
 
 // Middlewares
-app.use(
-  cors({
-    origin: [
-      'http://localhost:5173',
-      'http://localhost:5174',
-      'https://sujana-gold.vercel.app',
-      'https://sujana-backend-ruh8.onrender.com'
-    ],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-  }),
-);
+app.use(cors({origin : '*'}))
 
 app.use(express.json());
 
@@ -55,16 +44,88 @@ app.get('/', (req, res) => {
 });
 
 // Health Check Route
-app.get('/api/health', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'Server is running successfully',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    environment: process.env.NODE_ENV || 'development',
-    version: '1.0.0'
-  });
+app.get('/api/health', async (req, res) => {
+  try {
+    // Check database connection
+    let dbStatus = 'disconnected';
+    let dbError = null;
+    
+    try {
+      const dbConnection = mongoose.connection;
+      
+      if (dbConnection.readyState === 1) {
+        dbStatus = 'connected';
+        // Try a simple query to verify connection
+        await dbConnection.db.admin().ping();
+      } else if (dbConnection.readyState === 2) {
+        dbStatus = 'connecting';
+      } else {
+        dbStatus = 'disconnected';
+      }
+    } catch (error) {
+      dbStatus = 'error';
+      dbError = error.message;
+    }
+
+    const healthStatus = {
+      success: true,
+      status: dbStatus === 'connected' ? 'healthy' : 'degraded',
+      timestamp: new Date().toISOString(),
+      uptime: Math.floor(process.uptime()),
+      uptimeFormatted: formatUptime(process.uptime()),
+      environment: process.env.NODE_ENV || 'development',
+      version: '1.0.0',
+      services: {
+        api: {
+          status: 'operational',
+          message: 'API server is running'
+        },
+        database: {
+          status: dbStatus,
+          message: dbStatus === 'connected' 
+            ? 'MongoDB connection is active' 
+            : dbError || 'MongoDB connection issue',
+          ...(dbError && { error: dbError })
+        }
+      },
+      memory: {
+        used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024) + ' MB',
+        total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024) + ' MB',
+        rss: Math.round(process.memoryUsage().rss / 1024 / 1024) + ' MB'
+      }
+    };
+
+    // Return appropriate status code based on health
+    const statusCode = dbStatus === 'connected' ? 200 : 503;
+    res.status(statusCode).json(healthStatus);
+  } catch (error) {
+    res.status(503).json({
+      success: false,
+      status: 'unhealthy',
+      timestamp: new Date().toISOString(),
+      message: 'Health check failed',
+      error: error.message
+    });
+  }
 });
+
+// Helper function to format uptime
+function formatUptime(seconds) {
+  const days = Math.floor(seconds / 86400);
+  const hours = Math.floor((seconds % 86400) / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = Math.floor(seconds % 60);
+  
+  if (days > 0) {
+    return `${days}d ${hours}h ${minutes}m ${secs}s`;
+  } else if (hours > 0) {
+    return `${hours}h ${minutes}m ${secs}s`;
+  } else if (minutes > 0) {
+    return `${minutes}m ${secs}s`;
+  } else {
+    return `${secs}s`;
+  }
+}
 
 // Routes
 app.use('/api/auth', authRoutes);
