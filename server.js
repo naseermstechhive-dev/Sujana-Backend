@@ -34,7 +34,10 @@ app.use(
   })
 );
 
-app.use(express.json());
+// Increase JSON body size limit to handle Base64 encoded images (photo + signature)
+// Default is 100kb, we need at least 10MB for images
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // DB Connection Middleware (for serverless environments)
 app.use(async (req, res, next) => {

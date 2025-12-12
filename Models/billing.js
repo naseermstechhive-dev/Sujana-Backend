@@ -87,6 +87,10 @@ const billingSchema = new mongoose.Schema(
       type: String, // Base64 encoded image data
       default: null,
     },
+    customerSignature: {
+      type: String, // Base64 encoded signature image data
+      default: null,
+    },
   },
   { timestamps: true },
 );
