@@ -237,15 +237,14 @@ export const resetGoldTransactions = async (req, res, next) => {
       });
     }
 
-    // Delete all gold-related transactions
-    await Billing.deleteMany({});
-    await Renewal.deleteMany({});
-    await Takeover.deleteMany({});
-    await CashVault.deleteMany({ type: { $in: ['billing'] } });
+    // DO NOT DELETE any transactions - all data must be preserved for Analytics and Expense Tracker
+    // The frontend filters by date, so after reset, it will show empty for the new day
+    // All historical data remains in the database for Analytics dashboard and Expense Tracker
+    // UserVault will continue to show all historical billings
 
     res.json({
       success: true,
-      message: 'All gold transactions reset successfully',
+      message: 'Day reset successfully. All transaction data preserved in database for Analytics and Expense Tracker. Frontend will show new day\'s data after you set initial cash.',
     });
   } catch (err) {
     next(err);

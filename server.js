@@ -7,6 +7,7 @@ import cashRoutes from './routes/cashRoutes.js';
 import billingRoutes from './routes/billingRoutes.js';
 import renewalRoutes from './routes/renewalRoutes.js';
 import takeoverRoutes from './routes/takeoverRoutes.js';
+import goldPriceRoutes from './routes/goldPriceRoutes.js';
 import User from './Models/user.js';
 
 dotenv.config();
@@ -60,6 +61,7 @@ app.use('/api/cash', cashRoutes);
 app.use('/api/billing', billingRoutes);
 app.use('/api/renewal', renewalRoutes);
 app.use('/api/takeover', takeoverRoutes);
+app.use('/api/gold-prices', goldPriceRoutes);
 
 // Global Error Handler
 app.use((err, req, res, next) => {

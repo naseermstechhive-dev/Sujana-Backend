@@ -158,13 +158,14 @@ export const resetAllCash = async (req, res, next) => {
       });
     }
 
-    // Only reset initial cash - billing deductions are kept in database for Analytics
-    // Frontend will filter to show only today's transactions
+    // Only reset initial cash entries - all billing deductions are kept in database for Analytics
+    // Frontend filters by date, so after reset, it will show empty for the new day
+    // All historical data (billing deductions, margin calculations) preserved for Analytics and Expense Tracker
     await CashVault.deleteMany({ type: 'initial' });
 
     res.json({
       success: true,
-      message: 'Initial cash reset successfully. Historical data preserved for Analytics.',
+      message: 'Initial cash reset successfully. All billing deductions, margin, and remaining cash calculations preserved in database for Analytics and Expense Tracker. Frontend will show new day\'s data after you set initial cash.',
     });
   } catch (err) {
     next(err);
