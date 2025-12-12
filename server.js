@@ -15,8 +15,26 @@ const app = express();
 
 const PORT = process.env.PORT || 5001;
 
-// Middlewares
-app.use(cors({origin : '*'}))
+// Middlewares - CORS Configuration
+app.use(
+  cors({
+    origin: process.env.NODE_ENV === 'production'
+      ? [
+          'https://sujana-gold.vercel.app',
+          'https://sujana-backend.vercel.app',
+          // Add your production frontend URL here
+        ]
+      : [
+          'http://localhost:5173',
+          'http://localhost:5174',
+          'http://localhost:3000',
+          'http://localhost:5001',
+        ],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
 
 app.use(express.json());
 
