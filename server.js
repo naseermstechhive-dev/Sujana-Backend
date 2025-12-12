@@ -19,20 +19,18 @@ const PORT = process.env.PORT || 5001;
 app.use(
   cors({
     origin: process.env.NODE_ENV === 'production'
-      ? [
-          'https://sujana-gold.vercel.app',
-          'https://sujana-backend.vercel.app',
-          // Add your production frontend URL here
-        ]
+      ? '*' // Allow all origins in production
       : [
           'http://localhost:5173',
           'http://localhost:5174',
           'http://localhost:3000',
           'http://localhost:5001',
         ],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    credentials: process.env.NODE_ENV !== 'production', // credentials can't be used with origin: '*'
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
   })
 );
 
